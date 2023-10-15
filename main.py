@@ -139,7 +139,7 @@ def imprimeAlmacen(almacen):
 def getDominio(almacen, tamaño):
     dominio = []
 
-    for i in range (len(almacen)):
+    for i in range(len(almacen)):
         if almacen[i].tam == tamaño:
             dominio = almacen[i].lista
             break
@@ -220,28 +220,16 @@ def funcionVar(tablero, almacen, direccion):
 # Crear restricciones en las variables
 #########################################################################
 def funcionRestriccion(varH, varV):
-    for i in range (len(varH)):
-        for j in range (len(varV)):
-            restriccion = False
-
-            for casillaH in range (len(varH[i].celda)):
-                if restriccion:
-                    break
-
-                for casillaV in range (len(varV[j].celda)):
-                    if (
-                        varH[i].celda[casillaH]
-                        == varV[j].celda[casillaV]
-                    ):
-                        varH[i].restriccionC.append(
-                            varV[j]
-                        )
-                        varV[j].restriccionC.append(
-                            varH[i]
-                        )
-
-                        restriccion = True
-                        break
+    for i in range(len(varH)):
+        celdas_comparadas = set()
+        for casillaH in varH[i].celda:
+            for j in range(len(varV)):
+                if j not in varH[i].restriccionC:  # Evitar comparaciones repetidas
+                    for casillaV in varV[j].celda:
+                        if casillaH == casillaV:
+                            varH[i].restriccionC.append(varV[j])
+                            varV[j].restriccionC.append(varH[i])
+                            celdas_comparadas.add(casillaH)
 
 
 #########################################################################
@@ -250,8 +238,8 @@ def funcionRestriccion(varH, varV):
 def ForwardChecking(tablero, almacen):
     varH = []
     varV = []
-    varH = funcionVar(tablero, almacen,"H")
-    varV = funcionVar(tablero, almacen,"V")
+    varH = funcionVar(tablero, almacen, "H")
+    varV = funcionVar(tablero, almacen, "V")
 
     funcionRestriccion(varH, varV)
 
