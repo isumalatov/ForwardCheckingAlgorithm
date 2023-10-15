@@ -150,70 +150,37 @@ def getDominio(almacen, tamaño):
 #########################################################################
 # funcionVarH
 #########################################################################
-def funcionVarH(tablero, almacen):
+def funcionVar(tablero, almacen, direccion):
     posI = [0, 0]
 
     celdasVacias = 0
-
     variables = []
     dominio = []
 
-    for fila in range (tablero.alto):
-        for columna in range (tablero.ancho):
-            if tablero.getCelda(fila, columna) == "-":
+    for fila in range(tablero.alto):
+        for columna in range(tablero.ancho):
+            if direccion == "H" and tablero.getCelda(fila, columna) == "-":
                 celdasVacias += 1
 
                 if columna == tablero.ancho - 1:
                     dominio = getDominio(almacen, celdasVacias)
                     variable = Variable(celdasVacias, dominio)
 
-                    for i in range (celdasVacias):
+                    for i in range(celdasVacias):
                         variable.celda.append([posI[0], posI[1] + i])
 
                     variables.append(variable)
                     celdasVacias = 0
                     posI = [fila + 1, 0]
 
-            elif tablero.getCelda(fila, columna) == "*":
-                if celdasVacias > 0:
-                    dominio = getDominio(almacen, celdasVacias)
-                    variable = Variable(celdasVacias, dominio)
-
-                    for i in range (celdasVacias):
-                        variable.celda.append([posI[0], posI[1] + i])
-
-                    variables.append(variable)
-                    celdasVacias = 0
-
-                if columna == tablero.ancho - 1:
-                    posI = [fila + 1, 0]
-                else:
-                    posI = [fila, columna + 1]
-
-    return variables
-
-
-#########################################################################
-# funcionVarV
-#########################################################################
-def funcionVarV(tablero, almacen):
-    posI = [0, 0]
-
-    celdasVacias = 0
-
-    variables = []
-    dominio = []
-
-    for columna in range (tablero.ancho):
-        for fila in range (tablero.alto):
-            if tablero.getCelda(fila, columna) == "-":
+            elif direccion == "V" and tablero.getCelda(fila, columna) == "-":
                 celdasVacias += 1
 
                 if fila == tablero.alto - 1:
                     dominio = getDominio(almacen, celdasVacias)
                     variable = Variable(celdasVacias, dominio)
 
-                    for i in range (celdasVacias):
+                    for i in range(celdasVacias):
                         variable.celda.append([posI[0] + i, posI[1]])
 
                     variables.append(variable)
@@ -225,16 +192,26 @@ def funcionVarV(tablero, almacen):
                     dominio = getDominio(almacen, celdasVacias)
                     variable = Variable(celdasVacias, dominio)
 
-                    for i in range (celdasVacias):
-                        variable.celda.append([posI[0] + i, posI[1]])
+                    if direccion == "H":
+                        for i in range(celdasVacias):
+                            variable.celda.append([posI[0], posI[1] + i])
+                    elif direccion == "V":
+                        for i in range(celdasVacias):
+                            variable.celda.append([posI[0] + i, posI[1]])
 
                     variables.append(variable)
                     celdasVacias = 0
 
-                if fila == tablero.alto - 1:
-                    posI = [0, columna + 1]
-                else:
-                    posI = [fila + 1, columna]
+                if direccion == "H":
+                    if columna == tablero.ancho - 1:
+                        posI = [fila + 1, 0]
+                    else:
+                        posI = [fila, columna + 1]
+                elif direccion == "V":
+                    if fila == tablero.alto - 1:
+                        posI = [0, columna + 1]
+                    else:
+                        posI = [fila + 1, columna]
 
     return variables
 
@@ -273,8 +250,8 @@ def funcionRestriccion(varH, varV):
 def ForwardChecking(tablero, almacen):
     varH = []
     varV = []
-    varH = funcionVarH(tablero, almacen)
-    varV = funcionVarV(tablero, almacen)
+    varH = funcionVar(tablero, almacen,"H")
+    varV = funcionVar(tablero, almacen,"V")
 
     funcionRestriccion(varH, varV)
 
