@@ -137,81 +137,189 @@ def imprimeAlmacen(almacen):
 # getDominio
 #########################################################################
 def getDominio(almacen, tamaño):
-    dominio = []
+    return next((variable.lista for variable in almacen if variable.tam == tamaño), [])
 
-    for i in range(len(almacen)):
-        if almacen[i].tam == tamaño:
-            dominio = almacen[i].lista
-            break
+#########################################################################
+# Modificar Dominio
+#########################################################################
+def modificar_dominio(tablero, variable, posicion_Inicial, i):
 
-    return dominio
+    palabras_borradas = []
+    
+    if variable.tipo == "horizontal":
+
+        if tablero.getCelda(posicion_Inicial[0], posicion_Inicial[1] + i).isalpha():
+            
+            palabras_borradas = [
+                palabra
+                for palabra in variable.dominio
+                if any(letra != tablero.getCelda(posicion_Inicial[0], posicion_Inicial[1] + i) for i, letra in enumerate(palabra))
+            ]
+
+        for palabra_a_borrar in palabras_borradas:
+
+            variable.dominio.remove(palabra_a_borrar)
+
+  
+    else:
+
+        if tablero.getCelda(posicion_Inicial[0] + i, posicion_Inicial[1]).isalpha():
+            
+            palabras_borradas = [
+                palabra
+                for palabra in variable.dominio
+                if any(letra != tablero.getCelda(posicion_Inicial[0] + i, posicion_Inicial[1]) for i, letra in enumerate(palabra))
+            ]
+
+        for palabra_a_borrar in palabras_borradas:
+
+            variable.dominio.remove(palabra_a_borrar)
 
 
 #########################################################################
 # funcionVarH
 #########################################################################
-def funcionVar(tablero, almacen, direccion):
-    posI = [0, 0]
+def funcionVar(tablero, direccion):
 
-    celdasVacias = 0
     variables = []
     dominio = []
+    tam = 0
+    variable_horizontal = 0
+    variable_vertical = 0
 
-    for fila in range(tablero.alto):
+    posicion_Inicial = [0, 0]
+
+    if direccion == "H":
+
+        for fila in range(tablero.alto):
+
+            for columna in range(tablero.ancho):
+
+                if tablero.getCelda(fila, columna) == '-' or tablero.getCelda(fila, columna).isalpha():
+
+                    tam += 1
+
+                    if columna == COLS - 1:
+
+                        if tam > 1:
+
+                            almacen = creaAlmacen()
+
+                            dominio = getDominio(almacen, tam)
+
+                            nombre = "H" + str(variable_horizontal)
+
+                            variable = Variable(nombre, tam, dominio, "horizontal")
+
+                            for i in range(tam):
+                                variable.celdas.append([posicion_Inicial[0], posicion_Inicial[1] + i])
+                                modificar_dominio(tablero, variable, posicion_Inicial, i)
+
+                            variables.append(variable)
+
+                            variable_horizontal += 1
+
+
+                        tam = 0
+
+                        posicion_Inicial = [fila + 1, 0]
+
+
+                elif tablero.getCelda(fila, columna) == '*':
+
+                    if tam > 0:
+
+                        if tam > 1:
+
+                            almacen = creaAlmacen()
+
+                            dominio = getDominio(almacen, tam)
+
+                            nombre = "H" + str(variable_horizontal)
+
+                            variable = Variable(nombre, tam, dominio, "horizontal")
+
+                            for i in range(tam):
+                                variable.celdas.append([posicion_Inicial[0], posicion_Inicial[1] + i])
+                                modificar_dominio(tablero, variable, posicion_Inicial, i)
+                            
+                            variables.append(variable)
+
+                            variable_horizontal += 1
+
+
+                        tam = 0
+
+
+                    if columna == COLS - 1:
+                        posicion_Inicial = [fila + 1, 0]
+                    else:
+                        posicion_Inicial = [fila, columna + 1]
+            
+    else:
+
         for columna in range(tablero.ancho):
-            if direccion == "H" and tablero.getCelda(fila, columna) == "-":
-                celdasVacias += 1
 
-                if columna == tablero.ancho - 1:
-                    dominio = getDominio(almacen, celdasVacias)
-                    variable = Variable(celdasVacias, dominio)
+            for fila in range(tablero.alto):
 
-                    for i in range(celdasVacias):
-                        variable.celda.append([posI[0], posI[1] + i])
+                if tablero.getCelda(fila, columna) == '-' or tablero.getCelda(fila, columna).isalpha():
 
-                    variables.append(variable)
-                    celdasVacias = 0
-                    posI = [fila + 1, 0]
+                    tam += 1
 
-            elif direccion == "V" and tablero.getCelda(fila, columna) == "-":
-                celdasVacias += 1
+                    if fila == FILS - 1:
 
-                if fila == tablero.alto - 1:
-                    dominio = getDominio(almacen, celdasVacias)
-                    variable = Variable(celdasVacias, dominio)
+                        if tam > 1:
 
-                    for i in range(celdasVacias):
-                        variable.celda.append([posI[0] + i, posI[1]])
+                            almacen = creaAlmacen()
 
-                    variables.append(variable)
-                    celdasVacias = 0
-                    posI = [0, columna + 1]
+                            dominio = getDominio(almacen, tam)
 
-            elif tablero.getCelda(fila, columna) == "*":
-                if celdasVacias > 0:
-                    dominio = getDominio(almacen, celdasVacias)
-                    variable = Variable(celdasVacias, dominio)
+                            nombre = "V" + str(variable_vertical)
 
-                    if direccion == "H":
-                        for i in range(celdasVacias):
-                            variable.celda.append([posI[0], posI[1] + i])
-                    elif direccion == "V":
-                        for i in range(celdasVacias):
-                            variable.celda.append([posI[0] + i, posI[1]])
+                            variable = Variable(nombre, tam, dominio, "vertical")
 
-                    variables.append(variable)
-                    celdasVacias = 0
+                            for i in range(tam):
+                                variable.celdas.append([posicion_Inicial[0] + i, posicion_Inicial[1]])
+                                modificar_dominio(tablero, variable, posicion_Inicial, i)
+                                
+                            variables.append(variable)
 
-                if direccion == "H":
-                    if columna == tablero.ancho - 1:
-                        posI = [fila + 1, 0]
+                            variable_vertical += 1
+
+                        tam = 0
+
+                        posicion_Inicial = [0, columna + 1]
+
+
+                elif tablero.getCelda(fila, columna) == '*':
+
+                    if tam > 0:
+
+                        if tam > 1:
+
+                            almacen = creaAlmacen()
+
+                            dominio = getDominio(almacen, tam)
+
+                            nombre = "V" + str(variable_vertical)
+
+                            variable = Variable(nombre, tam, dominio, "vertical")
+
+                            for i in range(tam):
+                                variable.celdas.append([posicion_Inicial[0] + i, posicion_Inicial[1]])
+                                modificar_dominio(tablero, variable, posicion_Inicial, i)
+                                
+                            variables.append(variable)
+
+                            variable_vertical += 1
+
+                        tam = 0
+
+
+                    if fila == FILS - 1:
+                        posicion_Inicial = [0, columna + 1]
                     else:
-                        posI = [fila, columna + 1]
-                elif direccion == "V":
-                    if fila == tablero.alto - 1:
-                        posI = [0, columna + 1]
-                    else:
-                        posI = [fila + 1, columna]
+                        posicion_Inicial = [fila + 1, columna]
 
     return variables
 
@@ -220,88 +328,346 @@ def funcionVar(tablero, almacen, direccion):
 # Crear restricciones en las variables
 #########################################################################
 def funcionRestriccion(varH, varV):
-    for i in range(len(varH)):
-        celdas_comparadas = set()
-        for casillaH in varH[i].celda:
-            for j in range(len(varV)):
-                if j not in varH[i].restriccionC:  # Evitar comparaciones repetidas
-                    for casillaV in varV[j].celda:
-                        if casillaH == casillaV:
-                            varH[i].restriccionC.append(varV[j])
-                            varV[j].restriccionC.append(varH[i])
-                            celdas_comparadas.add(casillaH)
+    
+    for h in varH:
+        for v in (varV):
+            encontrado = False     
+            for hres in h.celdas:
+                if encontrado:
+                    break
+                for vres in v.celdas:
+                    if hres == vres:
+                        h.restricciones.append(v)
+                        v.restricciones.append(h)
+                        encontrado = True
+                        break
 
 
-#########################################################################
+######################################################################### 
 # Algoritmo Forward Checking
 #########################################################################
-def ForwardChecking(tablero, almacen):
+
+def getCelda_Restringida(variable, variable_restringida):
+
+    for casilla in variable.celdas:
+
+        if casilla in variable_restringida.celdas:
+
+            celda_restriccion = casilla
+            break
+
+    return celda_restriccion
+
+def comprobar_restricciones(variable):
+
+    variable_palabra_valido = True
+
+    for posicion, variable_restringida in enumerate(variable.restricciones):
+
+        celda_restriccion = getCelda_Restringida(variable, variable_restringida)
+        palabras_borradas = []
+
+        for palabra in variable_restringida.dominio:
+
+            index_variable = variable.celdas.index(celda_restriccion)
+            index_variable_restringida = variable_restringida.celdas.index(celda_restriccion)
+        
+            if variable.valor[index_variable] != palabra[index_variable_restringida]:
+
+                palabras_borradas.append(palabra)
+                variable_restringida.se_ha_borrado = True
+
+        if variable_restringida.se_ha_borrado:
+
+            for palabra_borrada in palabras_borradas:
+                variable_restringida.dominio.remove(palabra_borrada)
+
+            variable_restringida.palabras_borradas[variable.nombre] = palabras_borradas  
+
+        if len(variable_restringida.dominio) == 0:
+
+            variable_palabra_valido = False
+
+            for i in range(posicion + 1):
+
+                if variable.restricciones[i].se_ha_borrado:
+
+                    variable.restricciones[i].se_ha_borrado = False
+
+                    if variable.nombre in variable.restricciones[i].palabras_borradas:
+                        
+                        for palabra_borrada in variable.restricciones[i].palabras_borradas[variable.nombre]:
+                            
+                            variable.restricciones[i].dominio.append(palabra_borrada)
+
+                        del variable.restricciones[i].palabras_borradas[variable.nombre]
+    
+
+            break
+
+    return variable_palabra_valido
+
+
+def recuperar_valores_variableHorizontal(variablesHorizontales, variable, i):
+
+    almacen = creaAlmacen()
+
+    variable.dominio = getDominio(almacen, variable.tam)
+    i -= 1
+    variablesHorizontales[i].dominio.pop(0)
+
+    for variable_restringida in variablesHorizontales[i].restricciones:
+
+        if variablesHorizontales[i].nombre in variable_restringida.palabras_borradas:
+            
+            for palabra_borrada in variable_restringida.palabras_borradas[variablesHorizontales[i].nombre]:
+                
+                variable_restringida.dominio.append(palabra_borrada)
+
+            del variable_restringida.palabras_borradas[variablesHorizontales[i].nombre]
+        
+
+def fc(variablesHorizontales):
+
+    res = True
+    i = 0
+
+    while i < len(variablesHorizontales):
+        
+        variable = variablesHorizontales[i]
+
+        while variable.dominio:
+  
+            variable.valor = variable.dominio[0]
+            variable_palabra_valido = True
+
+            variable_palabra_valido = comprobar_restricciones(variable)
+
+            if variable_palabra_valido == False:
+                variable.dominio.pop(0)
+            else:
+                break
+                
+
+        if variable.dominio:
+
+            i += 1
+
+        else:
+
+            if i > 0:
+
+                recuperar_valores_variableHorizontal(variablesHorizontales, variable, i)
+                
+            else:
+
+                res =  False
+                break
+
+    return res
+
+
+def ForwardChecking(tablero, variables, pulsado_ac3):
+
     varH = []
     varV = []
-    varH = funcionVar(tablero, almacen, "H")
-    varV = funcionVar(tablero, almacen, "V")
 
-    funcionRestriccion(varH, varV)
+    if pulsado_ac3 == False:
 
-    return False
+        varH = funcionVar(tablero, "H")
+        varV = funcionVar(tablero, "V")
+
+        funcionRestriccion(varH, varV)
+
+    else:
+
+        varH = variables[0]
+        varV = variables[1]   
+
+    resultado = fc(varH)
+
+    if resultado:
+        for variable in varV:
+            variable.valor = variable.dominio[0]
+
+    vT = varH + varV
+
+    if resultado:
+
+        for v in range(len(vT)):
+
+            for l in range(len(vT[v].valor)):
+
+                tablero.setCelda(vT[v].celdas[l][0], 
+                                vT[v].celdas[l][1], 
+                                vT[v].valor[l])
+                
+        
+    return resultado
 
 
+######################################################################### 
+# Algoritmo AC3
 #########################################################################
+def AC3(tablero):
+    
+    varH = []
+    varV = []
+
+    varH = funcionVar(tablero, "H")
+    varV = funcionVar(tablero, "V")
+
+    funcionRestriccion(varH, varV) 
+
+    print("DOMINIOS ANTES DEL AC3")
+
+    for i in varH:
+       print(i)
+
+    for j in varV:
+       print(j)
+
+    
+    restriccion_lista = []
+
+    restriccion_lista = [[v, r] for var_list in [varH, varV] for v in var_list for r in v.restricciones]
+
+    no_hay_solucion = False
+
+    while restriccion_lista:
+
+        if no_hay_solucion:
+            break
+
+        pareja_nueva = restriccion_lista[0]
+
+        palabras_borradas_nuevas = []
+
+        borrado_nuevo = False
+
+        for palabra1_nueva in pareja_nueva[0].dominio:
+
+            if no_hay_solucion:
+                break
+
+            palabra_valida_nueva = False
+
+            for palabra2_nueva in pareja_nueva[1].dominio:
+
+                celda_restriccion_nueva = None
+
+                for casilla_nueva in pareja_nueva[0].celdas:
+
+                    if casilla_nueva in pareja_nueva[1].celdas:
+
+                        celda_restriccion_nueva = casilla_nueva
+                        break
+
+                index_primera_variable = pareja_nueva[0].celdas.index(celda_restriccion_nueva)
+                index_segunda_variable = pareja_nueva[1].celdas.index(celda_restriccion_nueva)
+
+                if (palabra1_nueva[index_primera_variable] == 
+                    palabra2_nueva[index_segunda_variable]):
+                    
+                    palabra_valida_nueva = True
+
+            if not palabra_valida_nueva:
+                borrado_nuevo = True
+                palabras_borradas_nuevas.append(palabra1_nueva)
+
+        if borrado_nuevo:
+
+            for restriccion_nueva in pareja_nueva[0].restricciones:
+                        
+                if [restriccion_nueva, pareja_nueva[0]] not in restriccion_lista:
+                    restriccion_lista.append([restriccion_nueva, pareja_nueva[0]])
+
+        for palabra_nueva in palabras_borradas_nuevas:
+
+            pareja_nueva[0].dominio.remove(palabra_nueva)
+
+        if len(pareja_nueva[0].dominio) == 0:
+
+            no_hay_solucion = True
+            break
+
+        restriccion_lista.pop(0)
+
+
+    print("DOMINIOS DESPUES DEL AC3")
+
+    for i in varH:
+       print(i)
+
+    for j in varV:
+       print(j)
+
+    if no_hay_solucion:
+        MessageBox.showwarning("Alerta", "No hay solución")
+
+    return [varH, varV]
+
+
+#########################################################################  
 # Principal
 #########################################################################
 def main():
-    root = tkinter.Tk()  # para eliminar la ventana de Tkinter
-    root.withdraw()  # se cierra
+    root= tkinter.Tk() #para eliminar la ventana de Tkinter
+    root.withdraw() #se cierra
     pygame.init()
-
-    reloj = pygame.time.Clock()
-
-    anchoVentana = COLS * (TAM + MARGEN) + MARGEN
-    altoVentana = MARGEN_INFERIOR + FILS * (TAM + MARGEN) + MARGEN
-
-    dimension = [anchoVentana, altoVentana]
-    screen = pygame.display.set_mode(dimension)
+    
+    reloj=pygame.time.Clock()
+    
+    anchoVentana=COLS*(TAM+MARGEN)+MARGEN
+    altoVentana= MARGEN_INFERIOR+FILS*(TAM+MARGEN)+MARGEN
+    
+    dimension=[anchoVentana,altoVentana]
+    screen=pygame.display.set_mode(dimension) 
     pygame.display.set_caption("Practica 1: Crucigrama")
-
-    botonFC = pygame.image.load("botonFC.png").convert()
-    botonFC = pygame.transform.scale(botonFC, [50, 30])
-
-    botonAC3 = pygame.image.load("botonAC3.png").convert()
-    botonAC3 = pygame.transform.scale(botonAC3, [50, 30])
-
-    botonReset = pygame.image.load("botonReset.png").convert()
-    botonReset = pygame.transform.scale(botonReset, [50, 30])
-
-    almacen = creaAlmacen()
-    game_over = False
-    tablero = Tablero(FILS, COLS)
+    
+    botonFC=pygame.image.load("botonFC.png").convert()
+    botonFC=pygame.transform.scale(botonFC,[50, 30])
+    
+    botonAC3=pygame.image.load("botonAC3.png").convert()
+    botonAC3=pygame.transform.scale(botonAC3,[50, 30])
+    
+    botonReset=pygame.image.load("botonReset.png").convert()
+    botonReset=pygame.transform.scale(botonReset,[50,30])
+    
+    pulsado_ac3 = False
+    variables = [[], []]
+    game_over=False
+    tablero=Tablero(FILS, COLS)    
     while not game_over:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_over = True
-            if event.type == pygame.MOUSEBUTTONUP:
-                # obtener posición y calcular coordenadas matriciales
-                pos = pygame.mouse.get_pos()
+            if event.type==pygame.QUIT:               
+                game_over=True
+            if event.type==pygame.MOUSEBUTTONUP:                
+                #obtener posición y calcular coordenadas matriciales                               
+                pos=pygame.mouse.get_pos()                
                 if pulsaBotonFC(pos, anchoVentana, altoVentana):
                     print("FC")
-                    # aquí llamar al forward checking
-                    res = ForwardChecking(tablero, almacen)
-                    if res == False:
-                        MessageBox.showwarning("Alerta", "No hay solución")
-                elif pulsaBotonAC3(pos, anchoVentana, altoVentana):
+                    #aquí llamar al forward checking
+                    res = ForwardChecking(tablero, variables, pulsado_ac3)
+                    if res==False:
+                        MessageBox.showwarning("Alerta", "No hay solución")                                  
+                elif pulsaBotonAC3(pos, anchoVentana, altoVentana):                    
                     print("AC3")
-                elif pulsaBotonReset(pos, anchoVentana, altoVentana):
+                    pulsado_ac3 = True
+                    variables = AC3(tablero)
+                elif pulsaBotonReset(pos, anchoVentana, altoVentana):       
+                    pulsado_ac3 = False            
                     tablero.reset()
                 elif inTablero(pos):
-                    colDestino = pos[0] // (TAM + MARGEN)
-                    filDestino = pos[1] // (TAM + MARGEN)
-                    if event.button == 1:  # botón izquierdo
-                        if tablero.getCelda(filDestino, colDestino) == VACIA:
+                    colDestino=pos[0]//(TAM+MARGEN)
+                    filDestino=pos[1]//(TAM+MARGEN)                    
+                    if event.button==1: #botón izquierdo
+                        if tablero.getCelda(filDestino, colDestino)==VACIA:
                             tablero.setCelda(filDestino, colDestino, LLENA)
                         else:
                             tablero.setCelda(filDestino, colDestino, VACIA)
-                    elif event.button == 3:  # botón derecho
-                        c = askstring("Entrada", "Introduce carácter")
+                    elif event.button==3: #botón derecho
+                        c=askstring('Entrada', 'Introduce carácter')
                         tablero.setCelda(filDestino, colDestino, c.upper())
 
         ##código de dibujo
