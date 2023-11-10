@@ -407,25 +407,6 @@ def comprobar_restricciones(variable):
             break
 
     return variable_palabra_valido
-
-
-def recuperar_valores_variableHorizontal(variablesHorizontales, variable, i):
-
-    almacen = creaAlmacen()
-
-    variable.dominio = getDominio(almacen, variable.tam)
-    i -= 1
-    variablesHorizontales[i].dominio.pop(0)
-
-    for variable_restringida in variablesHorizontales[i].restricciones:
-
-        if variablesHorizontales[i].nombre in variable_restringida.palabras_borradas:
-            
-            for palabra_borrada in variable_restringida.palabras_borradas[variablesHorizontales[i].nombre]:
-                
-                variable_restringida.dominio.append(palabra_borrada)
-
-            del variable_restringida.palabras_borradas[variablesHorizontales[i].nombre]
         
 
 def fc(variablesHorizontales):
@@ -458,8 +439,22 @@ def fc(variablesHorizontales):
 
             if i > 0:
 
-                recuperar_valores_variableHorizontal(variablesHorizontales, variable, i)
-                
+                almacen = creaAlmacen()
+
+                variable.dominio = getDominio(almacen, variable.tam)
+                i -= 1
+                variablesHorizontales[i].dominio.pop(0)
+
+                for variable_restringida in variablesHorizontales[i].restricciones:
+
+                    if variablesHorizontales[i].nombre in variable_restringida.palabras_borradas:
+                        
+                        for palabra_borrada in variable_restringida.palabras_borradas[variablesHorizontales[i].nombre]:
+                            
+                            variable_restringida.dominio.append(palabra_borrada)
+
+                        del variable_restringida.palabras_borradas[variablesHorizontales[i].nombre]   
+
             else:
 
                 res =  False
