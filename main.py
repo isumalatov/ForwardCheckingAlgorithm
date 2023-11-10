@@ -7,6 +7,7 @@ from tablero import *
 from dominio import *
 from pygame.locals import *
 from variable import *
+import time
 
 GREY = (190, 190, 190)
 NEGRO = (100, 100, 100)
@@ -15,8 +16,8 @@ BLANCO = (255, 255, 255)
 MARGEN = 5  # ancho del borde entre celdas
 MARGEN_INFERIOR = 60  # altura del margen inferior entre la cuadrícula y la ventana
 TAM = 60  # tamaño de la celda
-FILS = 5  # número de filas del crucigrama
-COLS = 6  # número de columnas del crucigrama
+FILS = 10  # número de filas del crucigrama
+COLS = 10  # número de columnas del crucigrama
 
 LLENA = "*"
 VACIA = "-"
@@ -648,13 +649,19 @@ def main():
                 if pulsaBotonFC(pos, anchoVentana, altoVentana):
                     print("FC")
                     #aquí llamar al forward checking
+                    start_time = time.perf_counter()
                     res = ForwardChecking(tablero, variables, pulsado_ac3)
+                    end_time = time.perf_counter()
+                    print("Tiempo de ejecución FC: ", end_time - start_time)
                     if res==False:
                         MessageBox.showwarning("Alerta", "No hay solución")                                  
                 elif pulsaBotonAC3(pos, anchoVentana, altoVentana):                    
                     print("AC3")
                     pulsado_ac3 = True
+                    start_time_ac3 = time.perf_counter()
                     variables = AC3(tablero)
+                    end_time_ac3 = time.perf_counter()
+                    print("Tiempo de ejecución AC3: ", end_time_ac3 - start_time_ac3)
                 elif pulsaBotonReset(pos, anchoVentana, altoVentana):       
                     pulsado_ac3 = False            
                     tablero.reset()
